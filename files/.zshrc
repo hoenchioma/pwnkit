@@ -61,12 +61,16 @@ DISABLE_AUTO_UPDATE="true"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
+  z
   git
   encode64
   jsontools
   pip
   python
   supervisor
+  zsh-autosuggestions 
+  zsh-syntax-highlighting
+  zsh-autocomplete
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -108,3 +112,32 @@ alias setp="echo \`pwd\` > /share/.curproj"
 
 test -d $PWNKIT_PATH && cd $PWNKIT_PATH
 cat /etc/hosts_host >> /etc/hosts
+
+# clipboard shotcuts
+alias "c=xclip -selection clipboard"
+alias "v=xclip -selection clipboard -o"
+
+# ranger function (to cd into current directory when quiting ranger)
+function ranger {
+  local IFS=$'\t\n'
+  local tempfile="$(mktemp -t tmp.XXXXXX)"
+  local ranger_cmd=(
+    command
+    ranger
+    --cmd="map q chain shell echo %d > "$tempfile"; quitall"
+  )
+  
+  ${ranger_cmd[@]} "$@"
+  if [[ -f "$tempfile" ]] && [[ "$(cat -- "$tempfile")" != "$(echo -n `pwd`)" ]]; then
+    cd -- "$(cat "$tempfile")" || return
+  fi
+  command rm -f -- "$tempfile" 2>/dev/nul
+}
+
+fixperm() {
+  [ $EUID -ne 0 ] && echo "This function requires superuser privileges. Please run with sudo." && return 1
+  target_dir=$(readlink -e ${1:-.})
+  [ -e $target_dir ] && chown -R "$HOST_UID:$HOST_UID" $target_dir && echo "Ownership of '$target_dir' has been changed to user $HOST_UID."
+  [ ! -e $target_dir ] && echo "Target directory '$target_dir' does not exist."
+}
+
