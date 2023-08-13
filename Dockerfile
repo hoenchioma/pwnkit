@@ -9,57 +9,76 @@ RUN apt-get update
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get install -y -q
 
-RUN apt-get install -y binwalk cmake libcurl4-openssl-dev libgmp3-dev libmpc-dev libssl-dev locales metasploit-framework
+# make sure apt doesn't delete cache
+RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
-RUN apt-get install -y amass
-RUN apt-get install -y crackmapexec
-RUN apt-get install -y dirb
-RUN apt-get install -y dnsrecon
-RUN apt-get install -y dnsutils
-RUN apt-get install -y enum4linux
-RUN apt-get install -y exploitdb
-RUN apt-get install -y fcrackzip
-RUN apt-get install -y ffuf
-RUN apt-get install -y ftp-ssl
-RUN apt-get install -y gdb
-RUN apt-get install -y git
-RUN apt-get install -y gobuster
-RUN apt-get install -y iputils-ping
-RUN apt-get install -y john
-RUN apt-get install -y joomscan
-RUN apt-get install -y libimage-exiftool-perl
-RUN apt-get install -y ltrace
-RUN apt-get install -y man
-RUN apt-get install -y masscan
-RUN apt-get install -y nano
-RUN apt-get install -y ncat
-RUN apt-get install -y nfs-common
-RUN apt-get install -y nikto
-RUN apt-get install -y nishang
-RUN apt-get install -y nmap
-RUN apt-get install -y pcregrep
-RUN apt-get install -y php
-RUN apt-get install -y php-mysql
-RUN apt-get install -y python2
-RUN apt-get install -y python2-dev
-RUN apt-get install -y python3-dev
-RUN apt-get install -y python3-pip
-RUN apt-get install -y screen
-RUN apt-get install -y smbmap
-RUN apt-get install -y sqlmap
-RUN apt-get install -y sqsh
-RUN apt-get install -y sslscan
-RUN apt-get install -y strace
-RUN apt-get install -y telnet
-RUN apt-get install -y tree
-RUN apt-get install -y vim
-RUN apt-get install -y wfuzz
-RUN apt-get install -y wine
-RUN apt-get install -y wine32
-RUN apt-get install -y winexe
-RUN apt-get install -y wordlists
-RUN apt-get install -y xxd
-RUN apt-get install -y zsh
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update && apt-get install -y \
+        binwalk \
+        cmake \
+        libcurl4-openssl-dev \
+        libgmp3-dev \
+        libmpc-dev \
+        libssl-dev \
+        locales \
+        metasploit-framework
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update && apt-get install -y \
+        amass \
+        crackmapexec \
+        dirb \
+        dnsrecon \
+        dnsutils \
+        enum4linux \
+        exploitdb \
+        fcrackzip \
+        ffuf \
+        ftp-ssl \
+        gdb \
+        git \
+        gobuster \
+        iputils-ping \
+        john \
+        joomscan \
+        libimage-exiftool-perl \
+        ltrace \
+        man \
+        masscan \
+        nano \
+        ncat \
+        nfs-common \
+        nikto \
+        nishang \
+        nmap \
+        pcregrep \
+        php \
+        php-mysql \
+        python2 \
+        python2-dev \
+        python3-dev \
+        python3-pip \
+        pngcheck \
+        screen \
+        smbmap \
+        sqlmap \
+        sqsh \
+        sslscan \
+        stegcracker \
+        steghide \
+        strace \
+        telnet \
+        tree \
+        vim \
+        wfuzz \
+        wine \
+        wine32 \
+        winexe \
+        wordlists \
+        xxd \
+        zsh \
+        ranger \
+        xclip
 
 RUN apt-get autoremove -y
 
@@ -69,6 +88,9 @@ RUN locale-gen "en_US.UTF-8"
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+
+# Ruby tools
+RUN gem install zsteg
 
 # Python tools
 COPY get-pip.py /tmp/get-pip.py
@@ -81,27 +103,33 @@ RUN alias python=python3
 RUN alias pip=pip3
 RUN pip3 install --upgrade --break-system-packages pip
 
-RUN pip3 install --upgrade --break-system-packages angr
-RUN pip3 install --upgrade --break-system-packages GMPY2
-RUN pip3 install --upgrade --break-system-packages keystone-engine
-RUN pip3 install --upgrade --break-system-packages Pillow
-RUN pip3 install --upgrade --break-system-packages pwntools
-RUN pip3 install --upgrade --break-system-packages pycryptodome
-RUN pip3 install --upgrade --break-system-packages requests
-RUN pip3 install --upgrade --break-system-packages ropper
-RUN pip3 install --upgrade --break-system-packages six
-RUN pip3 install --upgrade --break-system-packages tqdm
-RUN pip3 install --upgrade --break-system-packages uncompyle6
-RUN pip3 install --upgrade --break-system-packages unicorn
-RUN pip3 install --upgrade --break-system-packages urllib3
-RUN pip3 install --upgrade --break-system-packages wfuzz
-RUN pip3 install --upgrade --break-system-packages z3-solver
+RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
+    pip3 install --upgrade --break-system-packages \
+        angr \
+        GMPY2 \
+        keystone-engine \
+        Pillow \
+        pwntools \
+        pycryptodome \
+        requests \
+        ropper \
+        six \
+        tqdm \
+        uncompyle6 \
+        unicorn \
+        urllib3 \
+        wfuzz \
+        z3-solver \
+        gdown
 
 # Other tools
 RUN git clone https://github.com/hugsy/gef.git .gef && \
     echo "source $(pwd)/.gef/gef.py" >> ~/.gdbinit
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+RUN git clone https://github.com/zsh-users/zsh-autosuggestions.git /root/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+RUN git clone --depth 1 https://github.com/marlonrichert/zsh-autocomplete.git /root/.oh-my-zsh/custom/plugins/zsh-autocomplete
 
 # Create work directories
 RUN mkdir /workdir
