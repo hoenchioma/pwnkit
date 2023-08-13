@@ -1,5 +1,4 @@
 #!/bin/sh
 set -e
 MY_PATH=$(dirname "$0")
-"$MY_PATH/pwnkit-update"
 "$MY_PATH/pwnkit-start"
