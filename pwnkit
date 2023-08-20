@@ -1,4 +1,24 @@
-#!/bin/sh
+#!/bin/bash
 set -e
-MY_PATH=$(dirname "$0")
-"$MY_PATH/pwnkit-start"
+
+CONTAINER_NAME="pwnkit"
+
+MY_PATH=$(dirname "$(readlink -f "$0")")
+
+# if container isn't running start container first
+if [[ "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" == "" ]]; then
+  echo "Pwnkit container is not running."
+  echo "Starting pwnkit container..."
+  "$MY_PATH/pwnkit-start"
+fi
+
+clear
+echo "                                                  "
+echo "  ██████╗ ██╗    ██╗███╗   ██╗██╗  ██╗██╗████████╗"
+echo "  ██╔══██╗██║    ██║████╗  ██║██║ ██╔╝██║╚══██╔══╝"
+echo "  ██████╔╝██║ █╗ ██║██╔██╗ ██║█████╔╝ ██║   ██║   "
+echo "  ██╔═══╝ ██║███╗██║██║╚██╗██║██╔═██╗ ██║   ██║   "
+echo "  ██║     ╚███╔███╔╝██║ ╚████║██║  ██╗██║   ██║   "
+echo "  ╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝   ╚═╝   "
+echo "                                                  "
+docker exec -it $CONTAINER_NAME /bin/zsh

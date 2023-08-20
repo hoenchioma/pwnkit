@@ -1,20 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 set -e
-# [ "$UID" -eq 0 ] || exec sudo sh "$0" "$@"
 
-MY_PATH=$(dirname "$0")
-"$MY_PATH/pwnkit-ascii"
+IMAGE_NAME="pwnkit:latest"
 
-# Check for docker
+MY_PATH=$(dirname "$(readlink -f "$0")")
 
 echo "Pulling latest base image . . ."
 docker pull kalilinux/kali-rolling:latest
 echo "Base image pulled."
 
 echo "Building docker image . . ."
-docker build -t jasperboot/pwnkit:latest .
+docker build -t $IMAGE_NAME $MY_PATH
 echo "Docker image built successfully."
-
-# echo "Pushing new version to registry . . ."
-# docker jasperboot/pwnkit:latest
-# echo "New image pushed succesfully!"

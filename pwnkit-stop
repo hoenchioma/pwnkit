@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+IMAGE_NAME="pwnkit:latest"
+CONTAINER_NAME="pwnkit"
+
+MY_PATH=$(dirname "$(readlink -f "$0")")
+
+# if container isn't running do nothing
+if [[ "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" == "" ]]; then
+  echo "Pwnkit container is not running."
+  exit 1
+fi
+
+echo "Stopping pwnkit container..."
+docker stop $CONTAINER_NAME
+echo "Removing pwnkit container..."
+docker rm $CONTAINER_NAME

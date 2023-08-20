@@ -1,17 +1,32 @@
-#!/bin/sh
-if [[ "$(docker images jasperboot/pwnkit:latest | grep pwnkit 2> /dev/null)" == "" ]]; then
-  echo "Pwnkit is not installed yet. Please run pwnkit-update."
-else
-  clear
-  MY_PATH=$(dirname "$0")
-  "$MY_PATH/pwnkit-ascii"
-  docker run -i -t --rm \
-    --hostname pwnkit \
-    --cap-add=SYS_PTRACE \
-    --security-opt seccomp=unconfined \
-    -v ~/CTF/:/share/ \
-    -v /etc/hosts:/etc/hosts_host:ro \
-    -e PWNKIT_PATH=`pwd` \
-    -e HOST_UID=`id -u` \
-    jasperboot/pwnkit:latest
+#!/bin/bash
+set -e
+
+IMAGE_NAME="pwnkit:latest"
+CONTAINER_NAME="pwnkit"
+
+MY_PATH=$(dirname "$(readlink -f "$0")")
+
+# if image isn't available build image first
+if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then
+  echo "Pwnkit image is not available."
+  echo "Building pwnkit image..."
+  "$MY_PATH/pwnkit-build"
 fi
+
+# if container is already running exit
+if [[ "$(docker ps -q -f name=$CONTAINER_NAME 2> /dev/null)" != "" ]]; then
+  echo "Pwnkit container is already running."
+  exit 1
+fi
+
+docker run -t -d \
+  --name $CONTAINER_NAME \
+  --dns 8.8.8.8 \
+  --hostname pwnkit \
+  --cap-add=SYS_PTRACE \
+  --security-opt seccomp=unconfined \
+  -v ~/CTF/:/share/ \
+  -v /etc/hosts:/etc/hosts_host:ro \
+  -e PWNKIT_PATH=`pwd` \
+  -e HOST_UID=`id -u` \
+  $IMAGE_NAME
