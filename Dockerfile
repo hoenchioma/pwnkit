@@ -90,7 +90,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Ruby tools
-RUN gem install zsteg
+RUN gem install \
+    zsteg \
+    one_gadget
 
 # Python tools
 COPY get-pip.py /tmp/get-pip.py
